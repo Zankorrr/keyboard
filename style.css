@@ -4,9 +4,19 @@ body {
     align-items: center;
     font-family: Arial;
 }
+@media (max-width: 970px) {
+    body {
+      font-size: small;
+    }
+}
 textarea {
     resize: none;
     margin-bottom: 20px;
+}
+@media (max-width: 970px) {
+    textarea {
+      width: 90%;
+    }
 }
 .keyboard {
     display: grid;
@@ -17,6 +27,11 @@ textarea {
     grid-template-rows: repeat(5, 1fr);
     gap: 10px;
     border: 10px solid transparent;
+}
+@media (max-width: 970px) {
+    .keyboard {
+      width: 90%;
+    }
 }
 .keyboard div {
     border: 1px solid;
