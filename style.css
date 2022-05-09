@@ -26,6 +26,9 @@ textarea {
     cursor: pointer;
     transition: 0.1s;
 }
+.keyboard div:hover {
+    background: #f6f0ff;
+}
 .keyboard .x2 {
     grid-column: span 2;
 }

@@ -1,14 +1,13 @@
-
 document.body.insertAdjacentHTML('afterbegin', `<textarea rows="8" cols="111" disabled></textarea>
 <div class="keyboard"></div>
 <p>Клавиатура создана в операционной системе MacOS</p>
 <p>Для переключения языка комбинация: левый control + левый shift</p>
-<p>PS: Tab и CapsLock работают ужасно, я правда не понимаю как их укротить(</p>
-<p>PPS: Да и Shift не очень...</p>`)
+<p>PS: CapsLock работает ужасно, я правда не понимаю как его укротить(</p>`)
 
 const KEYBOARD = document.querySelector('.keyboard')
 const TEXTAREA = document.querySelector('textarea')
 let caps = false
+let shift = false
 let lang
 
 if(localStorage.lang) {
@@ -16,7 +15,6 @@ if(localStorage.lang) {
 } else {
     lang = 'en'
 }
-
 
 const CODES = ['Backquote', 'Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5', 'Digit6', 
 'Digit7', 'Digit8', 'Digit9', 'Digit0', 'Minus', 'Equal', 'Backspace', 'Tab', 'KeyQ', 
@@ -44,10 +42,10 @@ const KEYS_RU_SHIFT = ['Ë', '!', '"', '№', ';', '%', ':', '?', '*', '(', ')',
 'шифт', 'Я', 'Ч', 'С', 'М', 'И', 'Т', 'Ь', 'Б', 'Ю', ',', '▲', 'шифт', 
 'ктрл', 'опц', 'ком', ' ', 'ком', '◀', '▼', '▶', 'опц']
 
-const KEYS_EN_SHIFT = ['~', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '+', 'delete', 
+const KEYS_EN_SHIFT = ['~', '!', '@', '#', '$', '%', '^', '＆', '*', '(', ')', '_', '+', 'delete', 
 'tab', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '{', '}', '|', 
-'caps lock', 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ';', "\"", 'return', 
-'shift', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', '<', '>', '?', '▲', 'shift', 
+'caps lock', 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ';', '"', 'return', 
+'shift', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', '﹤', '﹥', '?', '▲', 'shift', 
 'ctrl', 'opt', 'cmd', ' ', 'cmd', '◀', '▼', '▶', 'opt']
 
 function init() {
@@ -65,7 +63,7 @@ function init() {
                 keyClass = ' class="x2 active"'
             }
         }
-        if(!caps) {
+        if(!caps && !shift) {
             if(lang == 'en') {
                 out += `<div${keyClass} id="${CODES[i]}">${KEYS_EN[i]}</div>`
             } else {
@@ -78,7 +76,6 @@ function init() {
             } else {
                 out += `<div${keyClass} id="${CODES[i]}">${KEYS_RU_SHIFT[i]}</div>`
             }
-            
         }
     }
     KEYBOARD.innerHTML = out
@@ -96,31 +93,31 @@ document.addEventListener('keydown', (event) => {
             }
             init() 
         }
-        
     }
 })
 
 document.onkeydown = function(event) {
     if(event.code != 'CapsLock') {
         document.querySelector(`.keyboard div[id="${event.code}"]`).classList.add('active')
-        if(event.key.length == 1) {
+        if(event.key.length == 1 || event.code == 'ArrowUp' || event.code == 'ArrowDown' ||
+             event.code == 'ArrowLeft' || event.code == 'ArrowRight') {
             if(event.shiftKey) {
-                if(lang == 'en') {
-                    TEXTAREA.value += KEYS_EN_SHIFT[CODES.indexOf(event.code)]
-                } else {
-                    TEXTAREA.value += KEYS_RU_SHIFT[CODES.indexOf(event.code)]
-                }
+                shift = true
+                TEXTAREA.value += document.querySelector(`.keyboard div[id="${event.code}"]`).innerHTML
             } else {
                 TEXTAREA.value += document.querySelector(`.keyboard div[id="${event.code}"]`).innerHTML
             }
+        } else if(event.code == 'ShiftLeft' || event.code == 'ShiftRight') {
+            shift = true
+            init()
+            document.querySelector(`.keyboard div[id="${event.code}"]`).classList.add('active')
         } else if(event.code == 'Backspace') {
             TEXTAREA.value = TEXTAREA.value.slice(0, -1)
+        } else if(event.code == 'Enter') {
+            TEXTAREA.value += "\n"
         } else if(event.code == 'Tab') {
-            TEXTAREA.value += '\t'
-            setTimeout(() => {
-                document.querySelector(`.keyboard div[id="Tab"]`).classList.remove('active')
-            }, '200')
-            KEYBOARD.focus()
+            TEXTAREA.value += '    '
+            return false
         }
     } else {
         if(document.querySelector(`.keyboard div[id="${event.code}"]`).classList.contains('active')) {
@@ -140,7 +137,15 @@ KEYBOARD.onmousedown = function(event) {
     } else if(event.target.id == "Enter") {
         TEXTAREA.value += "\n"
     } else if(event.target.id == "Tab") {
-        TEXTAREA.value += "\t"
+        TEXTAREA.value += '    '
+    } else if(event.target.id == "ShiftLeft") {
+        shift = true
+        init()
+        document.querySelector(`.keyboard div[id="ShiftLeft"]`).classList.add('active')
+    } else if(event.target.id == "ShiftRight") {
+        shift = true
+        init()
+        document.querySelector(`.keyboard div[id="ShiftRight"]`).classList.add('active')
     } else if(event.target.id == "CapsLock") {
         if(!caps) {
             caps = true
@@ -156,9 +161,17 @@ KEYBOARD.onmouseup = function(event) {
     if(event.target.id != "CapsLock") {
         event.target.classList.remove('active')
     }
+    if(event.target.id == "ShiftLeft" || event.target.id == 'ShiftRight') {
+        shift = false
+        init()
+    }
 }
 
 document.onkeyup = function(event) {
+    if(event.code == 'ShiftLeft' || event.code == 'ShiftRight') {
+        shift = false
+        init()
+    }
     document.querySelector(`.keyboard div[id="${event.code}"]`).classList.remove('active')
     KEYBOARD.focus()
 }
